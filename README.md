@@ -1,4 +1,4 @@
-[![Crates.io](https://img.shields.io/crates/v/function_group.svg)](https://github.com/Jon-Davis/function_group)
+[![Crates.io](https://img.shields.io/crates/v/function_group.svg)](https://crates.io/crates/function_group)
 
 # Function_Group
 
