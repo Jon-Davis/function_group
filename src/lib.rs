@@ -14,7 +14,7 @@
     (@ReturnType ($name:ident -> $ret:ty {$($tail:tt)*}) -> (($($trait:tt)*), ($($func:tt)*))) => {
         function_group!(@Define ($name, $ret, {$($tail)*}) -> (($($trait)*), ($($func)*)));
     };
-    (@ReturnType ($name:ident $($tail:tt)*) -> (($($trait:tt)*), ($($func:tt)*))) => {
+    (@ReturnType ($name:ident {$($tail:tt)*}) -> (($($trait:tt)*), ($($func:tt)*))) => {
         function_group!(@Define ($name, (), {$($tail)*}) -> (($($trait)*), ($($func)*)));
     };
     // construct the trait and function and call @Implementations
