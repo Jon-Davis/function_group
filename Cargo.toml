@@ -9,4 +9,13 @@ readme = "README.md"
 repository = "https://github.com/Jon-Davis/function_group"
 keywords = ["function", "overloading"]
 categories = ["no-std", "rust-patterns"]
+
+[lib]
+proc-macro = true
+
 [dependencies]
+quote = "0.6.*"
+
+[dependencies.syn]
+version = "0.15.*"
+features = ["full"]
