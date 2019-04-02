@@ -19,8 +19,7 @@ assert!(add((5, 5, 5)) == 15);
 ```
 
 ## Known Bugs
-  1. Not setting a return type results in a failed macro expansion so if you don't want to return anything use fn name -> ()
-  2. Refrences both mutable and immutable aren't bundled into the ty patern so while I look for a work around, refrences aren't supported
+  1. Refrences both mutable and immutable aren't bundled into the ty patern so while I look for a work around, refrences aren't supported
 
 ## Possible future features
   1. Generics should be feasble on a per sub-function basis
