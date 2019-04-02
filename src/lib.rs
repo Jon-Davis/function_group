@@ -19,6 +19,7 @@
     };
     // construct the trait and function and call @Implementations
     (@Define ($name:ident, $ret:ty, {$($tail:tt)*}) -> (($($trait:tt)*), ($($func:tt)*))) => {
+        #[allow(non_camel_case_types)]
         $($trait)*{
             fn $name(self) -> $ret;
         }
