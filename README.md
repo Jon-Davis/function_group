@@ -18,9 +18,6 @@ assert!(add((5, 5)) == 10);
 assert!(add((5, 5, 5)) == 15);
 ```
 
-## Known Bugs
-  1. Refrences both mutable and immutable aren't bundled into the ty patern so while I look for a work around, refrences aren't supported
-
 ## Possible future features
   1. Generics should be feasble on a per sub-function basis
   2. having a function group in the impl block of a struct should be possible

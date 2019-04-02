@@ -1,6 +1,6 @@
 #[macro_export] macro_rules! function_group {
     // get the visibility of the function and add it to the trait and func, call @Name
-    (@Visibilty ($vis:tt fn $($tail:tt)*) -> (($($trait:tt)*), ($($func:tt)*))) => {
+    (@Visibilty ($vis:vis fn $($tail:tt)*) -> (($($trait:tt)*), ($($func:tt)*))) => {
         function_group!(@Name (fn $($tail)*) -> (($($trait)* $vis), ($($func)* $vis)));
     };
     (@Visibilty (fn $($tail:tt)*) -> (($($trait:tt)*), ($($func:tt)*))) => {
@@ -28,7 +28,7 @@
         function_group!(@Implementations ($name, $ret, $($tail)*));
     };
     // Implementations fills out the different functions, this is the final step
-    (@Implementations ($name:ident, $ret:ty, $(($( $($var:ident)* : $type:ty),*) {$code:expr} $(;)*)*)) => {
+    (@Implementations ($name:ident, $ret:ty, $(($( $($var:ident)* : $type:ty),*) $code:block $(;)*)*)) => {
         $(impl $name for ($($type,)*){
             fn $name(self) -> $ret {
                 let ($($($var)*,)*) = self;

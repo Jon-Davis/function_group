@@ -20,12 +20,14 @@ fn test_function_group() {
 #[test]
 fn test_function_group_mutability() {
     function_group! {
-        fn add_10 -> usize {
-            (mut one : usize) {
-                one += 10;
-                one
+        fn add_too {
+            (one : &mut usize, two : usize) {
+                *one += two;
             }
         }
     }
-    assert!(add_10(1) == 11);
+
+    let mut x : usize = 10;
+    add_too((&mut x, 5 as usize));
+    assert!(x == 15);
 }
