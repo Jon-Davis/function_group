@@ -2,12 +2,12 @@
 # It is not intended for manual editing.
 [[package]]
 name = "function_group"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "tests"
 version = "0.1.0"
 dependencies = [
- "function_group 0.1.0",
+ "function_group 0.1.1",
 ]
 
