@@ -16,7 +16,8 @@ function_group! {
 
 assert!(add((5, 5)) == 10);
 assert!(add((5, 5, 5)) == 15);
-
+```
+```rust
 function_group! {
     fn add_to {
         (one : &mut usize, two : usize) {
