@@ -115,6 +115,38 @@ impl Parse for FunctionGroup {
 
 /// The function_group macro is used to create a single function that accepts mutltiple
 /// types of arguments. 
+/// Function groups can take multiple types of arguments and even be recursive, the general form
+/// of the function_group macro is displayed below.
+/// ```
+/// function_group! {
+///     fn name_of_function -> return_type_of_function {
+///         (argument_name_of_function : arugment_type_of_function...) {
+///             // body of function
+///         }
+///         (argument_name_of_function : arugment_type_of_function...) {
+///             // body of function
+///         }
+///         ...
+///     }
+/// }
+/// ```
+/// 
+/// Function groups can also be declared on types to do this there is an additonal parameter that comes after
+/// the function name and follows the form of ((&self | self | &mut self) : TypeTheFunctionWillBeImplementedOn).
+/// for example:
+/// ```
+/// function_group! {
+///     fn name_of_function(self : AwsomeStruct) {
+///         (argument_name_of_function : arugment_type_of_function...) {
+///             // body of function
+///         }
+///         (argument_name_of_function : arugment_type_of_function...) {
+///             // body of function
+///         }
+///         ...
+///     }
+/// }
+/// ```
 #[proc_macro]
 pub fn function_group(input: TokenStream) -> TokenStream {
     let function_group : FunctionGroup = parse_macro_input!(input as FunctionGroup);

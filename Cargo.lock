@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "function_group"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "quote 0.6.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.15.30 (registry+https://github.com/rust-lang/crates.io-index)",
