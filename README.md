@@ -40,9 +40,9 @@ add_to((&mut x, 5, 5));
 assert!(x == 25);
 ```
 
-Function Groups can even be associated with a Type, in the example below, each sub function will be passed a mtable refrence to self and these functions will
-be added to the TestStruct type.
+Function Groups can even be associated with a Type. In the example below, each sub function will be passed a mutable refrence to self, and these functions will be usable by the TestStruct type.
 ```rust
+struct TestStruct(usize);
 function_group! {
     fn add_to_struct(&mut self : TestStruct) {
         (one : usize) {
