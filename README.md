@@ -58,6 +58,7 @@ let mut x = TestStruct(10);
 x.add_to_struct((1,2));
 assert!(x.0 == 13);
 ```
+
 ## Possible future features
   1. Generics should be feasble on a per sub-function basis
   2. having a function group in a trait is unlikely
