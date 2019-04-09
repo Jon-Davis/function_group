@@ -2,9 +2,9 @@
 [![Documentation](https://docs.rs/function_group/badge.svg)](https://docs.rs/function_group)
 # Function_Group
 
-Function Group is a Function Overloading macro/hack for the rust programing language. The macro allows you to define multiple functions that take a variable number of arguments! *Actually the functions still only take one argument, but they accept multiple types of tuples*
+Function Group is a Function Overloading macro/hack for the rust programing language. The macro allows you to define multiple functions that take a variable number of arguments! *Actually the functions still only take one argument, but they accept multiple types of tuples*.
 
-Function groups can take multiple types of arguments and even be recursive
+Function groups can take multiple types of arguments and even be recursive.
 ```rust
 function_group! {
     fn add -> usize {

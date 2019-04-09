@@ -1,17 +1,18 @@
-
 extern crate proc_macro;
 use self::proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::{parenthesized, braced, parse_macro_input, Block, Ident, Token, token::Paren, Type, Visibility};
 
+// Represents a single sub-function in the function_group macro
 struct Function {
-    argument_idents : Vec<Ident>,
-    argument_types: Vec<Type>,
-    arugment_mutability : Vec<bool>,
-    body : Block,
+    argument_idents : Vec<Ident>,   // The names of the input arguments
+    argument_types: Vec<Type>,      // The types of the input arguments
+    arugment_mutability : Vec<bool>,// The mutability of the input arguments
+    body : Block,                   // The user code for the function
 }
 
+// The main parse struct of the function_group macro
 struct FunctionGroup {
     visibility : Visibility,    // The visibility of the function
     name: Ident,                // The name of the function and trait to be defined
@@ -22,43 +23,65 @@ struct FunctionGroup {
     functions : Vec<Function>,  // the functions that will be implemented  
 }
 
+// The Parse implementation of a Function parses the (arg1 : Type1, arg2 : Type2...) {} part of the macro
 impl Parse for Function {
     fn parse(input: ParseStream) -> Result<Self> {
         let mut argument_idents = vec!();
         let mut argument_types = vec!();
         let mut arugment_mutability = vec!();
+        // Each set of arguments are surrounded by parens
         let content;
         parenthesized!(content in input);
+        // loop since each function can have multiple arguments 
         loop {
+            // check to see if the mut ident is ahead
             let lookahead = content.lookahead1();
             if lookahead.peek(Token![mut]){
+                // if the mut ident was found, mark this argument as being mutable
                 content.parse::<Token![mut]>()?;
                 arugment_mutability.push(true)
             } else {
+                // if the mut ident was not found, mark this argument as not being mutable
                 arugment_mutability.push(false)
             }
+
+            // check to see if there is an identifier, if there is, continue on the with
+            // adding the argument, otherwise, the last identifier was found last iteration
+            // so terminate the loop
             let lookahead = content.lookahead1();
             if !lookahead.peek(Ident) {
                 break;
             }
             argument_idents.push(content.parse()?);
+            // after every argument name there is a : 
             content.parse::<Token![:]>()?;
+            // after the colon there is a type denoting the variable type
             argument_types.push(content.parse()?);
             let lookahead = content.lookahead1();
+            // there may or may not be a comma, usually if there is no comma, that means the last
+            // argument has been read, but this statement doesn't make that assumption
             if lookahead.peek(Token![,]) {
                 content.parse::<Token![,]>()?;
             }
         }
 
+        // The code block that is ment to be executed as the body
+        // of the function comes next
         let body : Block = input.parse()?;
+
+        // If there happens to be a semicolon after each pattern, ignore it
         let lookahead = input.lookahead1();
         if lookahead.peek(Token![;]) {
             input.parse::<Token![;]>()?;
         }
+
+        // return the Function struct
         Ok(Function{argument_idents, argument_types, arugment_mutability, body})
     }
 }
 
+// The Parse function for parse group gets the name, visibility, self params, and return type
+// then calls the Function parse function for each sub-function it finds
 impl Parse for FunctionGroup {
     fn parse(input: ParseStream) -> Result<Self> {
         // parse the visibilty of the functions
@@ -70,12 +93,18 @@ impl Parse for FunctionGroup {
 
         // optionally parse the self type and input of the functions
         let lookahead = input.lookahead1();
+        // self needs both an input ie &self and a Type ie T to implement the methods
         let mut self_input : Option<Type> = None;
         let mut self_type : Option<Type> = None;
         let mut self_mut : bool = false;
+        // The self params are optional, if they are there the function group is a function,
+        // otherwise it is a method
         if lookahead.peek(Paren) {
+            // The Self params are wraped in Parens
             let content;
             parenthesized!(content in input);
+            // It is possible that the mut ident will come before self, although this might actually
+            // be becoming deprecated in rust, however the macro still acounts for it
             let lookahead = content.lookahead1();
             if lookahead.peek(Token![mut]){
                 content.parse::<Token![mut]>()?;
@@ -83,14 +112,18 @@ impl Parse for FunctionGroup {
             } else {
                 self_mut = false;
             }
+            // get the input type ie self | &self | &mut self
             self_input = Some(content.parse()?);
+            // colon comes after input
             content.parse::<Token![:]>()?;
+            // get the type this method is being implemented on
             self_type = Some(content.parse()?);
         }
 
-        // optionally parse the output
+        // optionally parse the output, if there is none assume the output is the unit type
         let lookahead = input.lookahead1();
         let mut output : Option<Type> = None;
+        // output types are defined by the -> tokens followed by the output type
         if lookahead.peek(Token![-]) {
             input.parse::<Token![-]>()?;
             input.parse::<Token![>]>()?;
@@ -99,16 +132,20 @@ impl Parse for FunctionGroup {
 
         // parse all the internal functions
         let mut functions : Vec<Function> = vec!();
+        // all the subfunctions are stored in a block
         let content;
         braced!(content in input);
+        // loop because an arbitrary number of subfunctions are allowed
         loop {
+            // sub functions always start with a paren to denote the expected inputs
             let lookahead = content.lookahead1();
             if !lookahead.peek(Paren) {
                 break;
             }
+            // call the Functions parse function
             functions.push(content.parse()?);
         }
-
+        // Return the FunctionGroup
         Ok(FunctionGroup {visibility,name,output,self_input,self_type,self_mut,functions})
     }
 }
@@ -117,6 +154,7 @@ impl Parse for FunctionGroup {
 /// types of arguments. 
 /// Function groups can take multiple types of arguments and even be recursive, the general form
 /// of the function_group macro is displayed below.
+/// # Syntax
 /// ```
 /// function_group! {
 ///     fn name_of_function -> return_type_of_function {
@@ -149,11 +187,14 @@ impl Parse for FunctionGroup {
 /// ```
 #[proc_macro]
 pub fn function_group(input: TokenStream) -> TokenStream {
+    // Call the FunctionGroup Parse function
     let function_group : FunctionGroup = parse_macro_input!(input as FunctionGroup);
 
+    // If the self types are defined, then the macro should generate a method on the entered type
     if function_group.self_input.is_some() && function_group.self_type.is_some() {
         return function_group_method(function_group);
     }
+    // Otherwise the macro should generate stand alone functions
     return function_group_fn(function_group);
 }
 
@@ -168,6 +209,7 @@ fn function_group_method(group : FunctionGroup) -> TokenStream {
         quote!{ #output }
     };
 
+    // Since these types are wraped in options, unwrap them or set a defualt type if None
     let self_input = self_input.unwrap();
     let self_input = if self_mut {
         quote!{mut #self_input}
@@ -214,11 +256,13 @@ fn function_group_method(group : FunctionGroup) -> TokenStream {
         }
     }
 
+    // Expand the quotes to get the final output
     let expanded = quote! {
         #group_trait
         #group_impl
     };
 
+    // Return the final output
     TokenStream::from(expanded)
 }
 
