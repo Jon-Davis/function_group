@@ -1,44 +1,45 @@
+/*! The function_group macro is used to create a single function that accepts mutltiple
+ types of arguments. 
+ Function groups can take multiple types of arguments and even be recursive, the general form
+ of the function_group macro is displayed below.
+ # Syntax
+ ```
+ function_group! {
+     fn name_of_function -> return_type_of_function {
+         (argument_name_of_function : arugment_type_of_function...) {
+             // body of function
+         }
+         (argument_name_of_function : ArgumentName...) {
+             // body of function
+         }
+         ...
+     }
+ }
+ ```
+ 
+ Function groups can also be declared on types to do this there is an additonal parameter that comes after
+ the function name and follows the form of ((&self | self | &mut self) : TypeTheFunctionWillBeImplementedOn).
+ for example:
+ ```
+ function_group! {
+     fn name_of_function(self : AwsomeStruct) {
+         (argument_name_of_function : ArgumentName ...) {
+             // body of function
+         }
+         (argument_name_of_function : ArgumentName...) {
+             // body of function
+         }
+         ...
+     }
+ }
+ ```
+*/
+
 extern crate proc_macro;
 use self::proc_macro::TokenStream;
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::{parenthesized, braced, parse_macro_input, Block, Ident, Token, token::Paren, Type, Visibility};
-
-/// The function_group macro is used to create a single function that accepts mutltiple
-/// types of arguments. 
-/// Function groups can take multiple types of arguments and even be recursive, the general form
-/// of the function_group macro is displayed below.
-/// # Syntax
-/// ```
-/// function_group! {
-///     fn name_of_function -> return_type_of_function {
-///         (argument_name_of_function : ArgumentName...) {
-///             // body of function
-///         }
-///         (argument_name_of_function : ArgumentName...) {
-///             // body of function
-///         }
-///         ...
-///     }
-/// }
-/// ```
-/// 
-/// Function groups can also be declared on types to do this there is an additonal parameter that comes after
-/// the function name and follows the form of ((&self | self | &mut self) : TypeTheFunctionWillBeImplementedOn).
-/// for example:
-/// ```
-/// function_group! {
-///     fn name_of_function(self : AwsomeStruct) {
-///         (argument_name_of_function : ArgumentName ...) {
-///             // body of function
-///         }
-///         (argument_name_of_function : ArgumentName...) {
-///             // body of function
-///         }
-///         ...
-///     }
-/// }
-/// ```
 
 // Represents a single sub-function in the function_group macro
 struct Function {
