@@ -4,6 +4,42 @@ use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
 use syn::{parenthesized, braced, parse_macro_input, Block, Ident, Token, token::Paren, Type, Visibility};
 
+/// The function_group macro is used to create a single function that accepts mutltiple
+/// types of arguments. 
+/// Function groups can take multiple types of arguments and even be recursive, the general form
+/// of the function_group macro is displayed below.
+/// # Syntax
+/// ```
+/// function_group! {
+///     fn name_of_function -> return_type_of_function {
+///         (argument_name_of_function : ArgumentName...) {
+///             // body of function
+///         }
+///         (argument_name_of_function : ArgumentName...) {
+///             // body of function
+///         }
+///         ...
+///     }
+/// }
+/// ```
+/// 
+/// Function groups can also be declared on types to do this there is an additonal parameter that comes after
+/// the function name and follows the form of ((&self | self | &mut self) : TypeTheFunctionWillBeImplementedOn).
+/// for example:
+/// ```
+/// function_group! {
+///     fn name_of_function(self : AwsomeStruct) {
+///         (argument_name_of_function : ArgumentName ...) {
+///             // body of function
+///         }
+///         (argument_name_of_function : ArgumentName...) {
+///             // body of function
+///         }
+///         ...
+///     }
+/// }
+/// ```
+
 // Represents a single sub-function in the function_group macro
 struct Function {
     argument_idents : Vec<Ident>,   // The names of the input arguments
@@ -150,40 +186,60 @@ impl Parse for FunctionGroup {
     }
 }
 
-/// The function_group macro is used to create a single function that accepts mutltiple
-/// types of arguments. 
-/// Function groups can take multiple types of arguments and even be recursive, the general form
-/// of the function_group macro is displayed below.
-/// # Syntax
-/// ```
+///
+/// Function groups can take multiple types of arguments and even be recursive.
+/// ```rust
 /// function_group! {
-///     fn name_of_function -> return_type_of_function {
-///         (argument_name_of_function : arugment_type_of_function...) {
-///             // body of function
+///     fn add -> usize {
+///         (one : usize, two : usize) {
+///             one + two
 ///         }
-///         (argument_name_of_function : arugment_type_of_function...) {
-///             // body of function
+///         (one : usize, two : usize, three: usize) {
+///             add((one, two)) + three
 ///         }
-///         ...
 ///     }
 /// }
+///
+/// assert!(add((5, 5)) == 10);
+/// assert!(add((5, 5, 5)) == 15);
 /// ```
-/// 
-/// Function groups can also be declared on types to do this there is an additonal parameter that comes after
-/// the function name and follows the form of ((&self | self | &mut self) : TypeTheFunctionWillBeImplementedOn).
-/// for example:
-/// ```
+///
+/// The arguments can be mutable or immutable refrences.
+/// ```rust
 /// function_group! {
-///     fn name_of_function(self : AwsomeStruct) {
-///         (argument_name_of_function : arugment_type_of_function...) {
-///             // body of function
+///     fn add_to {
+///         (one : &mut usize, two : usize) {
+///             *one += two;
 ///         }
-///         (argument_name_of_function : arugment_type_of_function...) {
-///             // body of function
+///         (one : &mut usize, two : usize, three : usize) {
+///             *one += two + three;
 ///         }
-///         ...
 ///     }
 /// }
+///
+/// let mut x = 10;
+/// add_to((&mut x, 5));
+/// add_to((&mut x, 5, 5));
+/// assert!(x == 25);
+/// ```
+///
+/// Function Groups can even be associated with a Type. In the example below, each sub function will be passed a mutable refrence to self, and these functions will be usable by the TestStruct type.
+/// ```rust
+/// struct TestStruct(usize);
+/// function_group! {
+///     fn add_to_struct(&mut self : TestStruct) {
+///         (one : usize) {
+///             self.0 += one;
+///         }
+///         (one : usize, two : usize){
+///             self.0 += one + two; 
+///         }
+///     }
+/// }
+///
+/// let mut x = TestStruct(10);
+/// x.add_to_struct((1,2));
+/// assert!(x.0 == 13);
 /// ```
 #[proc_macro]
 pub fn function_group(input: TokenStream) -> TokenStream {
